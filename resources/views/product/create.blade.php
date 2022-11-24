@@ -7,7 +7,7 @@
                 Add Product
             </div>
             <div class="card-body">
-                <form method="post" action="{{ route('products.store') }}" id="product_form">
+                <form method="post" action="{{ route('products.store') }}" id="product_form" enctype="multipart/form-data">
                     @csrf
 
                     <div class="form-group">
@@ -23,6 +23,22 @@
                         <input type="text" class="form-control" name="desc"/>
                         @if ($errors->has('desc'))
                             <span class="text-danger">{{ $errors->first('desc') }}</span>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label>Image</label>
+                        <input type="file" class="form-control" name="image" id="image"/>
+                        <div class="holder mt-2">
+                            <img id="imgPreview" src="" alt="pic" height="100" width="100" style="display: none"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input type="number" class="form-control" name="price"/>
+                        @if ($errors->has('price'))
+                            <span class="text-danger">{{ $errors->first('price') }}</span>
                         @endif
                     </div>
 
@@ -117,10 +133,20 @@ $(document).on('click', "#btn_save", function (e){
             sub_category_id: {
                 required: true,
             },
+            price: {
+                required: true,
+            },
+            image: {
+                required: true,
+                accept: "image/*"
+            }
         },
         messages: {
             name: {
                 required: "Please enter product name."
+            },
+            image: {
+                accept: "Please enter only image."
             },
             desc: {
                 required: "Please enter product description."
@@ -141,5 +167,18 @@ $(document).on('click', "#btn_save", function (e){
         $("#product_form").submit();
     }
 })
+
+$('#image').change(function(){
+    $('#imgPreview').hide();
+
+    const file = this.files[0];
+    if (file){
+        let reader = new FileReader();
+        reader.onload = function(event){
+            $('#imgPreview').attr('src', event.target.result).show();
+        }
+        reader.readAsDataURL(file);
+    }
+});
 </script>
 @endsection

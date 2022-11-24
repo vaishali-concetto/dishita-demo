@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +16,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+//        $this->middleware('auth');
     }
 
     /**
@@ -24,7 +26,8 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $products = Product::all();
+        return view('web.home', compact('products'));
     }
 
     public function AdminDashboard(){
@@ -49,5 +52,13 @@ class HomeController extends Controller
             return view('auth.seller.dashborad', compact('logout'));
         }
         return redirect()->route("seller.login-view");
+    }
+
+    public function product_detail($id){
+        $data['product'] = Product::with('brand')->where('id', $id)->first();
+        $data['product_cat'] = ProductCategory::with('category')->where('product_id', $id)->where('is_sub', 0)->first();
+        $data['product_sub_cat'] = ProductCategory::with('category')->where('product_id', $id)->where('is_sub', 1)->first();
+//        dd($product_cat->toArray());
+        return view('web.product_detail', $data);
     }
 }

@@ -54,10 +54,17 @@ class ProductController extends Controller
     public function store(SaveProduct $request)
     {
         if (Auth::user()->hasPermissionTo('add product')) {
+            if ($request->hasFile('image')){
+                $imageName = time().'.'.$request->image->extension();
+                $request->image->move(public_path('product_images'), $imageName);
+            }
+
             $Product = Product::create([
                 'name' => $request->name,
                 'desc' => $request->desc,
                 'brand_id' => $request->brand_id,
+                'image' => 'product_images/'.$imageName,
+                'price' => $request->price,
             ]);
 
             $product_cat = ProductCategory::create([
@@ -123,12 +130,24 @@ class ProductController extends Controller
     public function update(SaveProduct $request, $id)
     {
         if (Auth::user()->hasPermissionTo('edit product')) {
-            $updateData = [
-                'name' => $request->name,
-                'desc' => $request->desc,
-                'brand_id' => $request->brand_id,
-            ];
-            Product::whereId($id)->update($updateData);
+            if ($request->hasFile('image')){
+                $imageName = time().'.'.$request->image->extension();
+                $request->image->move(public_path('product_images'), $imageName);
+                $old_image = Product::where('id',$id)->pluck('image')->first();
+                if (file_exists(public_path($old_image))){
+                    unlink($old_image);
+                }
+            }
+
+            $product = Product::where('id',$id)->first();
+            $product->name= $request->name;
+            $product->desc= $request->desc;
+            $product->brand_id= $request->brand_id;
+            $product->price= $request->price;
+            if (isset($imageName)) {
+                $product->image = 'product_images/' . $imageName;
+            }
+            $product->save();
 
             $updateData = [
                 'category_id' => $request->category_id,
@@ -164,7 +183,10 @@ class ProductController extends Controller
     public function destroy($id)
     {
         if (Auth::user()->hasPermissionTo('delete product')) {
-            $Product = Product::findOrFail($id);
+            $Product = Product::find($id);
+            if (file_exists(public_path($Product->image))){
+                unlink(public_path($Product->image));
+            }
             $Product->delete();
             $Product_cats = ProductCategory::where('product_id', $id)->delete();
 

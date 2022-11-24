@@ -51,3 +51,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'seller'], function (){
     Route::resource('products', \App\Http\Controllers\ProductController::class);
     Route::post('sub_categories', [\App\Http\Controllers\ProductController::class, 'sub_categories']);
 });
+
+
+Route::get('home', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('product_detail/{id}', [\App\Http\Controllers\HomeController::class, 'product_detail'])->name('product_detail');

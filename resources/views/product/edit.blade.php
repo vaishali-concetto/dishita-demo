@@ -7,7 +7,7 @@
                 Edit Product
             </div>
             <div class="card-body">
-                <form method="post" action="{{ route('products.update', $Product->id) }}" id="product_form">
+                <form method="post" action="{{ route('products.update', $Product->id) }}" id="product_form" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
 
@@ -24,6 +24,23 @@
                         <input type="text" class="form-control" name="desc" value="{{ $Product->desc }}"/>
                         @if ($errors->has('desc'))
                             <span class="text-danger">{{ $errors->first('desc') }}</span>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label>Image</label>
+                        <input type="file" class="form-control" name="image" id="image"/>
+                        <div id="image-error" class="error" for="image" style="display: block"></div>
+                        <div class="holder mt-2">
+                            <img id="imgPreview" src="{{ asset($Product->image) }}" alt="pic" height="100" width="100"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input type="number" class="form-control" name="price" value="{{ $Product->price }}"/>
+                        @if ($errors->has('price'))
+                            <span class="text-danger">{{ $errors->first('price') }}</span>
                         @endif
                     </div>
 
@@ -110,6 +127,7 @@ $(document).on('change', '#category_id', function (){
 
 $(document).on('click', "#btn_save", function (e){
     e.preventDefault();
+    $(".error").hide();
     $("#product_form").validate({
         rules: {
             name : {
@@ -127,10 +145,19 @@ $(document).on('click', "#btn_save", function (e){
             sub_category_id: {
                 required: true,
             },
+            price: {
+                required: true,
+            },
+            image: {
+                accept: "image/*"
+            }
         },
         messages: {
             name: {
                 required: "Please enter product name."
+            },
+            image: {
+                accept: "Please enter only image."
             },
             desc: {
                 required: "Please enter product description."
@@ -147,9 +174,28 @@ $(document).on('click', "#btn_save", function (e){
         }
     });
 
-    if($("#product_form").valid()){
+    if($("#imgPreview").attr('src') == undefined || $("#imgPreview").attr('src') == ""){
+        $("#image-error").html("image is required").show();
+    }
+
+    if($("#product_form").valid() && $("#imgPreview").attr('src') != "" && $("#imgPreview").attr('src')!=undefined){
+        // console.log($("#imgPreview").attr('src'));
         $("#product_form").submit();
     }
 })
+
+$('#image').change(function(){
+    $('#imgPreview').hide();
+    $('#imgPreview').removeAttr('src');
+
+    const file = this.files[0];
+    if (file){
+        let reader = new FileReader();
+        reader.onload = function(event){
+            $('#imgPreview').attr('src', event.target.result).show();
+        }
+        reader.readAsDataURL(file);
+    }
+});
 </script>
 @endsection

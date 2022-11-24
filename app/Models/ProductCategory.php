@@ -18,4 +18,8 @@ class ProductCategory extends Model
         'category_id',
         'is_sub',
     ];
+
+    public function category() {
+        return $this->hasOne(Category::class, 'id', 'category_id');
+    }
 }
